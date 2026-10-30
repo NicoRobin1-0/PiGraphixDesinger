@@ -129,6 +129,53 @@
             Pi.createPayment(paymentData, callbacks);
         });
     </script>
+<div style="text-align: center; margin-top: 30px; font-family: sans-serif; padding: 15px; border-top: 1px solid #ddd;">
+    <h3>PiGraphixDesigner - AI Image Generator</h3>
+    <p style="font-size: 14px; color: #666;">လိုချင်တဲ့ ပုံစံကို မြန်မာလို (သို့) အင်္ဂလိပ်လို ရိုက်ထည့်ပါ (ဥပမာ - ချစ်စရာ ကြောင်ပေါက်စ)</p>
+    
+    <input type="text" id="aiPrompt" placeholder="ဥပမာ - A cute cyberpunk cat..." style="width: 80%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;">
+    <br>
+    <button id="generateBtn" style="padding: 10px 20px; background: #ff4081; color: white; border: none; border-radius: 5px;">AI ပုံဖန်တီးမည်</button>
+    
+    <div style="margin-top: 15px;">
+        <div id="loadingText" style="display: none; color: #6200ee;">AI က ပုံဖန်တီးနေပါပြီ ခဏစောင့်ပါ...</div>
+        <img id="aiResultImage" src="" alt="" style="max-width: 100%; border-radius: 5px; margin-top: 10px;">
+    </div>
+</div>
+
+<script>
+document.getElementById('generateBtn').addEventListener('click', async function() {
+    const promptText = document.getElementById('aiPrompt').value;
+    const loadingText = document.getElementById('loadingText');
+    const resultImg = document.getElementById('aiResultImage');
+    
+    if(!promptText) {
+        alert('ကျေးဇူးပြု၍ ဖန်တီးလိုing စာသား (Prompt) ထည့်ပါ။');
+        return;
+    }
+    
+    loadingText.style.display = 'block';
+    resultImg.src = '';
+    
+    try {
+        // Hugging Face Stable Diffusion API ကို အသုံးပြုခြင်း
+        const response = await fetch("https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ inputs: promptText })
+        });
+        
+        const blob = await response.blob();
+        resultImg.src = URL.createObjectURL(blob);
+    } catch (error) {
+        alert('ပုံထုတ်ယူရာတွင် အမှားအယွင်း ရှိသွားပါသည်၊ ထပ်ကြိုးစားပါ။');
+    } finally {
+        loadingText.style.display = 'none';
+    }
+});
+</script>
 
 </body>
 </html>
