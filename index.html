@@ -133,3 +133,36 @@
 </body>
 </html>
 
+<div style="text-align: center; margin-top: 20px; font-family: sans-serif;">
+    <h3>PiGraphixDesigner - Background Remover</h3>
+    <input type="file" id="imageInput" accept="image/*" style="margin: 10px 0;">
+    <br>
+    <canvas id="canvas" style="max-width: 100%; border: 1px dashed #ccc; margin-top: 10px;"></canvas>
+    <br>
+    <button id="removeBgBtn" style="padding: 10px 20px; background: #6200ee; color: white; border: none; border-radius: 5px; margin-top: 10px;">နောက်ခံဖျက်မည်</button>
+</div>
+
+<script>
+const imageInput = document.getElementById('imageInput');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let uploadedImage = new Image();
+
+imageInput.addEventListener('change', function(e) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        uploadedImage.src = event.target.result;
+        uploadedImage.onload = function() {
+            canvas.width = uploadedImage.width;
+            canvas.height = uploadedImage.height;
+            ctx.drawImage(uploadedImage, 0, 0);
+        }
+    }
+    reader.readAsDataURL(e.target.files[0]);
+});
+
+document.getElementById('removeBgBtn').addEventListener('click', function() {
+    alert('ပုံနောက်ခံဖျက်ခြင်း လုပ်ဆောင်ချက် စတင်နေပါပြီ...');
+});
+</script>
+
