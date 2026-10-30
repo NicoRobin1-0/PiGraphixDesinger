@@ -213,3 +213,102 @@ document.getElementById('removeBgBtn').addEventListener('click', function() {
 });
 </script>
 
+<div style="text-align: center; margin-top: 20px; font-family: sans-serif; padding: 15px;">
+    <h3>PiGraphixDesigner - AI Design Studio</h3>
+    <p style="font-size: 14px; color: #666;">လိုချင်သော ပုံစံကို မြန်မာလို (သို့) အင်္ဂလိပ်လို ရိုက်ထည့်ပါ</p>
+    
+    <input type="text" id="aiPrompt" placeholder="ဥပမာ - ရန်ကုန်လမ်းလျှောက်..." style="width: 80%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;">
+    <br>
+    <button id="generateBtn" style="padding: 10px 20px; background: #6200ee; color: white; border: none; border-radius: 5px;">AI ဖြင့် ပုံဖန်တီးမည် (Free)</button>
+    <p id="limitText" style="font-size: 12px; color: #e91e63; margin-top: 5px;"></p>
+    
+    <div style="margin-top: 15px; position: relative; display: inline-block;">
+        <div id="loadingText" style="display: none; color: #6200ee; font-weight: bold;">AI က ပုံဖန်တီးနေပါပြီ ခဏစောင့်ပါ...</div>
+        <img id="aiResultImage" src="" alt="" style="max-width: 100%; border-radius: 5px; margin-top: 10px; display: none;">
+        <!-- Watermark Overlay -->
+        <div id="watermark" style="position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; font-size: 12px; border-radius: 3px; display: none;">PiGraphix Watermark</div>
+    </div>
+
+    <!-- Payment / Buy Options -->
+    <div id="paymentSection" style="display: none; margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd;">
+        <h4>✨ ဤဒီဇိုင်းကို HD အရည်အသွေးဖြင့် ဝယ်ယူရန်</h4>
+        <p style="font-size: 13px; color: #555;">Watermark မပါဝင်တော့သော မူရင်း HD ပုံကို ရယူပါ</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <button onclick="payWith('KBZPay / Wave Money')" style="padding: 10px; background: #0080ff; color: white; border: none; border-radius: 5px; font-weight: bold;">KBZPay / Wave Pay ဖြင့် ဝယ်မည် (မြန်မာငွေ)</button>
+            <button onclick="payWith('USDT')" style="padding: 10px; background: #26a69a; color: white; border: none; border-radius: 5px; font-weight: bold;">USDT ဖြင့် ဝယ်မည် (Crypto)</button>
+            <button onclick="payWith('Pi Network')" style="padding: 10px; background: #7b1fa2; color: white; border: none; border-radius: 5px; font-weight: bold;">Pi Network ဖြင့် ဝယ်မည် (1 Pi)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Check Daily Free Limit (5 photos per day)
+function checkLimit() {
+    let today = new Date().toDateString();
+    let usage = JSON.parse(localStorage.getItem('ai_usage')) || { date: today, count: 0 };
+    if (usage.date !== today) {
+        usage = { date: today, count: 0 };
+    }
+    localStorage.setItem('ai_usage', JSON.stringify(usage));
+    let remaining = 5 - usage.count;
+    document.getElementById('limitText').innerText = `ယနေ့ ကျန်ရှိသော အခမဲ့ အကြိမ်ရေ: ${remaining}/5 ပုံ`;
+    return remaining;
+}
+
+checkLimit();
+
+document.getElementById('generateBtn').addEventListener('click', async function() {
+    let remaining = checkLimit();
+    if (remaining <= 0) {
+        alert('ယနေ့အတွက် အခမဲ့ ပုံထုတ်ယူမှု ၅ ပုံ ပြည့်သွားပါပြီ။ ကျေးဇူးပြု၍ ထပ်မံသုံးစွဲရန် ဝယ်ယူအားပေးပါ။');
+        return;
+    }
+
+    const promptText = document.getElementById('aiPrompt').value;
+    const loadingText = document.getElementById('loadingText');
+    const resultImg = document.getElementById('aiResultImage');
+    const watermark = document.getElementById('watermark');
+    const paymentSection = document.getElementById('paymentSection');
+    
+    if(!promptText) {
+        alert('ကျေးဇူးပြု၍ ဖန်တီးလိုသော စာသား (Prompt) ထည့်ပါ။');
+        return;
+    }
+    
+    loadingText.style.display = 'block';
+    resultImg.style.display = 'none';
+    watermark.style.display = 'none';
+    paymentSection.style.display = 'none';
+    
+    try {
+        const response = await fetch("https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ inputs: promptText })
+        });
+        
+        const blob = await response.blob();
+        resultImg.src = URL.createObjectURL(blob);
+        resultImg.style.display = 'block';
+        watermark.style.display = 'block';
+        paymentSection.style.display = 'block';
+
+        // Update Usage Count
+        let usage = JSON.parse(localStorage.getItem('ai_usage'));
+        usage.count += 1;
+        localStorage.setItem('ai_usage', JSON.stringify(usage));
+        checkLimit();
+
+    } catch (error) {
+        alert('ပုံထုတ်ယူရာတွင် အမှားအယွင်း ရှိသွားပါသည်၊ ထပ်ကြိုးစားပါ။');
+    } finally {
+        loadingText.style.display = 'none';
+    }
+});
+
+function payWith(method) {
+    alert(method + ' ဖြင့် ငွေပေးချေရန် စနစ်သို့ ချိတ်ဆက်နေပါပြီ။ ကျေးဇူးတင်ပါသည်။');
+}
+</script>
+
