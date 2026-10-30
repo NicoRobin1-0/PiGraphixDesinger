@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiGraphixDesigner - AI Sticker & Mockup Maker</title>
+    <!-- Pi SDK CDN -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #6200ea;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background-color: #6200ea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
+        #result-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>PiGraphixDesigner</h2>
+        <p style="text-align: center; font-size: 14px; color: #666;">AI ဖြင့် တီရှပ်ဒီဇိုင်းနှင့် စတစ်ကာများ ဖန်တီးပါ</p>
+        
+        <label for="prompt">ဒီဇိုင်းပုံစံ ဖော်ပြချက် (Prompt):</label>
+        <textarea id="prompt" rows="3" placeholder="ဥပမာ - Cyberpunk tiger sticker, vector art, white background"></textarea>
+        
+        <button id="generate-btn">AI ဖြင့် ပုံဖန်တီးမည် (Free)</button>
+        
+        <div id="result-container">
+            <!-- AI ထုတ်ပေးမည့် ပုံပေါ်လာမည့်နေရာ -->
+        </div>
+
+        <button id="pay-btn" style="display:none; background-color: #00c853;">HD ပုံကို Pi ဖြင့် ဝယ်ယူရန် (1 Pi)</button>
+    </div>
+
+    <script>
+        // Pi SDK ကို Initialization လုပ်ခြင်း (Sandbox Mode ဖြင့် စမ်းသပ်ရန်)
+        Pi.init({ version: "2.0", sandbox: true });
+
+        document.getElementById('generate-btn').addEventListener('click', () => {
+            const promptText = document.getElementById('prompt').value;
+            if(!promptText) {
+                alert("ကျေးဇူးပြု၍ ဒီဇိုင်းဖော်ပြချက်ကို အရင်ရေးပါ!");
+                return;
+            }
+
+            const resultContainer = document.getElementById('result-container');
+            resultContainer.innerHTML = "<p>🎨 AI ပုံဖန်တီးနေပါပြီ၊ ခဏစောင့်ပါ...</p>";
+
+            // ဤနေရာတွင် AI API (ဥပမာ Hugging Face သို့မဟုတ် Backend) သို့ ပို့၍ ပုံထုတ်ယူရပါမည်။
+            // လက်တွေ့စမ်းသပ်ရန် နမူနာပုံပြသခြင်း:
+            setTimeout(() => {
+                resultContainer.innerHTML = `
+                    <p>✨ သင့်ဒီဇိုင်း ထွက်ရှိလာပါပြီ (Watermark ပါရှိသည်)</p>
+                    <img src="https://picsum.photos/300/300" alt="Generated AI Sticker">
+                `;
+                document.getElementById('pay-btn').style.display = 'block';
+            }, 2000);
+        });
+
+        // Pi ဖြင့် ငွေပေးချေမှု ခလုတ်နှိပ်ခြင်း
+        document.getElementById('pay-btn').addEventListener('click', () => {
+            const paymentData = {
+                amount: 1.0,
+                memo: "PiGraphixDesigner HD Design Purchase",
+                metadata: { type: "hd_sticker" },
+            };
+
+            const callbacks = {
+                onReadyForServerApproval: (paymentId) => {
+                    console.log("Server Approval စောင့်ဆိုင်းနေသည်: ", paymentId);
+                },
+                onReadyForServerCompletion: (paymentId, txid) => {
+                    console.log("ငွေပေးချေမှု ပြီးမြောက်ပါပြီ: ", txid);
+                    alert("🎉 HD ပုံကို အောင်မြင်စွာ ဝယ်ယူပြီးပါပြီ!");
+                },
+                onCancel: (paymentId) => {
+                    console.log("ငွေပေးချေမှုကို ဖျက်သိမ်းလိုက်ပါပြီ");
+                },
+                onError: (error, payment) => {
+                    console.error("ငွေပေးချေမှု အမှားအယွင်း: ", error);
+                }
+            };
+
+            Pi.createPayment(paymentData, callbacks);
+        });
+    </script>
+
+</body>
+</html>
+
